@@ -1,0 +1,10 @@
+.betago/
+
+data_9x9/*.npy
+data_9x9/*.tar
+
+*.pyc
+betago/*.pyc
+betago/dataloader/*.pyc
+betago/gosgf/*.pyc
+betago/model/*.pyc

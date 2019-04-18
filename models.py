@@ -16,12 +16,13 @@ import tensorflow as tf
 from keras.models import model_from_yaml
 
 
-def model1(input_channels, pretrained_fixed=False):
+def model1(input_channels, pretrained_fixed=True):
     nb_classes = 9 * 9  # One class for each position on the board
     go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
     nb_filters = 32  # number of convolutional filters to use
     nb_pool = 2  # size of pooling area for max pooling
     nb_conv = 3  # convolution kernel size
+    padding = ((5, 5), (5, 5))
 
     #################################
 
@@ -36,15 +37,18 @@ def model1(input_channels, pretrained_fixed=False):
         # Note that in Keras 1.0 we have to recompile the model explicitly
         pretrained_model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
         pretrained_model.load_weights(weight_file)
+        # Remove the last 2 layers dense x => 19*19 and activation (softmax)
+#        pretrained_model.summary()
+        pretrained_model.pop()
+        pretrained_model.pop()
+#        pretrained_model.summary()
 
     #################################
 
     model = Sequential()
-    model.add(ZeroPadding2D(input_shape=(input_channels, go_board_rows, go_board_cols),padding=((5, 5), (5, 5)), data_format='channels_first'))
-    model.summary()
-    # model.add(Conv2DTranspose(7, (11, 11), border_mode='valid',
-    #          input_shape=(input_channels, go_board_rows, go_board_cols),
-    #          data_format='channels_first', activation='relu'))
+    model.add(ZeroPadding2D(input_shape=(input_channels, go_board_rows, go_board_cols),
+                            padding=padding,
+                            data_format='channels_first'))
 
     model.add(pretrained_model)
     if pretrained_fixed:
@@ -54,10 +58,9 @@ def model1(input_channels, pretrained_fixed=False):
         model.layers[-1].trainable = True
 
     model.add(Dropout(0.5))
+    # Add a new softmax layer to replace the one removed from the pretrained model
     model.add(Dense(nb_classes, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
-    
-    model.summary()
 
     return model
 

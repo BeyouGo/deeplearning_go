@@ -15,9 +15,9 @@ import tensorflow as tf
 from keras.models import model_from_yaml
 from models import *
 
-num_samples = 10
+num_samples = 1000
 batch_size = 128
-nb_epoch = 1
+nb_epoch = 100
 
 nb_classes = 9 * 9  # One class for each position on the board
 go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
@@ -44,7 +44,8 @@ model = model1(input_channels)
 
 # Fit model to data
 model.fit(X, Y, batch_size=batch_size,epochs=nb_epoch, verbose=1)
-model.save("mysave.hd5")
+filename = 'model-' + str(num_samples) + '-' + str(nb_epoch) + '-' + str(batch_size) + '.hd5'
+model.save(filename)
 model.summary()
 
 # # Open web frontend
