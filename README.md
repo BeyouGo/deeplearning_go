@@ -36,7 +36,8 @@ To become how to compare models + arguments for each program
 * [ ] Research what types of model to use or alteration of models
 
 ### Code
-* [ ] Check when game is over and actually end the game when playing
+* [ ] Check when game is over and actually end the game when playing => nothing in the code hints at a possible game over so we need to implement it in some way
+    * [ ] In model_9x9.py line 97: None is returned when no play is possible => pass a turn for the bot so can detect end of the game
 * [ ] Save models once trained
 * [ ] Automate the AI comparison using saved models and weights
 * [ ] Document how to use
