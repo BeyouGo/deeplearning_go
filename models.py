@@ -40,10 +40,11 @@ def model1(input_channels, pretrained_fixed=False):
     #################################
 
     model = Sequential()
-    model.add(ZeroPadding2D(padding=((5, 5), (5, 5)), data_format='channels_first'))
-#    model.add(Conv2DTranspose(7, (11, 11), border_mode='valid',
-#              input_shape=(input_channels, go_board_rows, go_board_cols),
-#              data_format='channels_first', activation='relu'))
+    model.add(ZeroPadding2D(input_shape=(input_channels, go_board_rows, go_board_cols),padding=((5, 5), (5, 5)), data_format='channels_first'))
+    model.summary()
+    # model.add(Conv2DTranspose(7, (11, 11), border_mode='valid',
+    #          input_shape=(input_channels, go_board_rows, go_board_cols),
+    #          data_format='channels_first', activation='relu'))
 
     model.add(pretrained_model)
     if pretrained_fixed:
@@ -51,6 +52,7 @@ def model1(input_channels, pretrained_fixed=False):
         model.layers[-1].trainable = False
     else:
         model.layers[-1].trainable = True
+
     model.add(Dropout(0.5))
     model.add(Dense(nb_classes, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
