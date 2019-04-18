@@ -16,7 +16,7 @@ import tensorflow as tf
 from keras.models import model_from_yaml
 
 
-def model1(input_channels, pretrained_fixed=True):
+def model_padding_last_replaced(input_channels, pretrained_fixed=True):
     nb_classes = 9 * 9  # One class for each position on the board
     go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
     nb_filters = 32  # number of convolutional filters to use

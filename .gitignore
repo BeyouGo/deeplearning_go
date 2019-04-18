@@ -4,6 +4,7 @@ data_9x9/*.npy
 data_9x9/*.tar
 
 *.pyc
+models.pyc
 betago/*.pyc
 betago/dataloader/*.pyc
 betago/gosgf/*.pyc

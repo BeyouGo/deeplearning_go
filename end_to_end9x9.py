@@ -39,7 +39,7 @@ y = y[:num_samples]
 X = X.astype('float32')
 Y = np_utils.to_categorical(y, nb_classes)
 
-model = model1(input_channels)
+model = model_padding_last_replaced(input_channels)
 #model.summary()
 
 # Fit model to data
