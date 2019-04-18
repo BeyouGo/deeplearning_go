@@ -8,6 +8,7 @@ from keras.layers import LSTM, Conv2DTranspose
 from keras.models import Sequential
 from keras.layers.core import Dense, Dropout, Activation, Flatten
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
+from keras.layers import ZeroPadding2D
 from keras.utils import np_utils
 from betago.model_9x9 import KerasBot, HTTPFrontend
 from betago.processor9x9 import SevenPlaneProcessor
@@ -15,7 +16,7 @@ import tensorflow as tf
 from keras.models import model_from_yaml
 
 
-def model1(input_channels):
+def model1(input_channels, pretrained_fixed=False):
     nb_classes = 9 * 9  # One class for each position on the board
     go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
     nb_filters = 32  # number of convolutional filters to use
@@ -39,44 +40,22 @@ def model1(input_channels):
     #################################
 
     model = Sequential()
-    #
-    # model.add(LSTM(32, input_shape=(50, 2)))
-    # model.add(Dense(1))
-    #
-    # model.add(Dense(19,input_shape=(input_channels, go_board_rows, go_board_cols)))
-    #
-    # print(model.output)
-    #
-    #
-    # print(pretrained_model.input)
+    model.add(ZeroPadding2D(padding=((5, 5), (5, 5)), data_format='channels_first'))
+#    model.add(Conv2DTranspose(7, (11, 11), border_mode='valid',
+#              input_shape=(input_channels, go_board_rows, go_board_cols),
+#              data_format='channels_first', activation='relu'))
 
-    model.add(
-        Conv2DTranspose(7, (11, 11), border_mode='valid', input_shape=(input_channels, go_board_rows, go_board_cols),
-                        data_format='channels_first', activation='relu'))
-    #
-    # model.add(Convolution2D(nb_filters, nb_conv, nb_conv, border_mode='valid',
-    #                         input_shape=(input_channels, go_board_rows, go_board_cols)))
-
-    model.summary()
-    print(pretrained_model.input)
     model.add(pretrained_model)
-    # model.layers[-1].trainable = False
-
-    # model.add(Activation('relu'))
-    #
-    #
-    # model.add(Activation('relu'))
-    # model.add(Convolution2D(nb_filters, nb_conv, nb_conv))
-    # model.add(Activation('relu'))
-    # model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
-    # model.add(Dropout(0.2))
-    # model.add(Flatten())
-    # model.add(Dense(256))
-    # model.add(Dense(81))
-    # model.add(Activation('relu'))
+    if pretrained_fixed:
+        # Set pretrained as not updatable
+        model.layers[-1].trainable = False
+    else:
+        model.layers[-1].trainable = True
     model.add(Dropout(0.5))
     model.add(Dense(nb_classes, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
+    
+    model.summary()
 
     return model
 
@@ -106,41 +85,8 @@ def model2(input_channels):
     #################################
 
     model = Sequential()
-    #
-    # model.add(LSTM(32, input_shape=(50, 2)))
-    # model.add(Dense(1))
-    #
-    # model.add(Dense(19,input_shape=(input_channels, go_board_rows, go_board_cols)))
-    #
-    # print(model.output)
-    #
-    #
-    # print(pretrained_model.input)
-
-    # model.add(
-    #     Conv2DTranspose(7, (11, 11), border_mode='valid', input_shape=(input_channels, go_board_rows, go_board_cols),
-    #                     data_format='channels_first', activation='relu'))
-    #
-    # model.add(Convolution2D(nb_filters, nb_conv, nb_conv, border_mode='valid',
-    #                         input_shape=(input_channels, go_board_rows, go_board_cols)))
-
-    model.summary()
-    # print(pretrained_model.input)
     model.add(pretrained_model)
     model.layers[-1].trainable = False
-
-    # model.add(Activation('relu'))
-    #
-    #
-    # model.add(Activation('relu'))
-    # model.add(Convolution2D(nb_filters, nb_conv, nb_conv))
-    # model.add(Activation('relu'))
-    # model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
-    # model.add(Dropout(0.2))
-    # model.add(Flatten())
-    # model.add(Dense(256))
-    # model.add(Dense(81))
-    # model.add(Activation('relu'))
     model.add(Dropout(0.5))
     model.add(Dense(nb_classes, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])

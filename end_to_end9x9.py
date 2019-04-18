@@ -15,8 +15,9 @@ import tensorflow as tf
 from keras.models import model_from_yaml
 from models import *
 
-batch_size = 126
-nb_epoch = 50
+num_samples = 10
+batch_size = 128
+nb_epoch = 1
 
 nb_classes = 9 * 9  # One class for each position on the board
 go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
@@ -29,38 +30,22 @@ processor = SevenPlaneProcessor(data_directory='data_9x9')
 input_channels = processor.num_planes
 
 # Load go data from 1000 KGS games and one-hot encode labels
-X, y = processor.load_go_data_9x9(num_samples=1000,data_dir='data_9x9')
+X, y = processor.load_go_data_9x9(num_samples=num_samples,data_dir='data_9x9')
 
 
-X = X[:1000]
-y = y[:1000]
-
-# print(len(X))
-# print(len(X[0]))
-# print(len(X[0,0]))
-# print(len(X[0,0,0]))
-#
-
-
+X = X[:num_samples]
+y = y[:num_samples]
 
 X = X.astype('float32')
 Y = np_utils.to_categorical(y, nb_classes)
 
-# Specify a keras model with two convolutional layers and two dense layers,
-# connecting the (num_samples, 7, 19, 19) input to the 19*19 output vector.
-
-# model.add(Activation('softmax'))
-
-
 model = model1(input_channels)
-
-model.summary()
-
-
+#model.summary()
 
 # Fit model to data
 model.fit(X, Y, batch_size=batch_size,epochs=nb_epoch, verbose=1)
 model.save("mysave.hd5")
+model.summary()
 
 # # Open web frontend
 path = os.getcwd().replace('/examples', '')
@@ -70,5 +55,6 @@ webbrowser.open('file://' + path + '/ui/demoBot_9x9.html', new=2)
 go_model = KerasBot(model=model, processor=processor)
 graph = tf.get_default_graph()
 go_server = HTTPFrontend(bot=go_model,graph=graph,port=8080)
+webbrowser.open('http://0.0.0.0:8080/', new=2)
 go_server.run()
 
