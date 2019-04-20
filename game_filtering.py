@@ -70,9 +70,9 @@ def filter_archive(archive, src, dst, rank=1800):
 if __name__ == "__main__":
 
     #setting default values
-    rank = 1500;
-    src = 'games'
-    dst = 'null'
+    rank = 2000;
+    src = '/data_not_filtered'
+    dst = '/data_filtered'
     mode = 0
     argc = len(sys.argv)
     for i in range(1,argc):
@@ -96,6 +96,7 @@ if __name__ == "__main__":
         print("-d <dirName> to choose the destination (by default will create a filtered folder in the source directory)")
         print("-f <rank> to set the rank threshold (1500 by default)")
     elif mode == 1:
+        print(src)
         if not os.path.isdir(src):
             print("Error, no source directory found")
             exit()

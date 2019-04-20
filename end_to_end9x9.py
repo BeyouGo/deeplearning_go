@@ -11,13 +11,14 @@ from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.utils import np_utils
 from betago.model_9x9 import KerasBot, HTTPFrontend
 from betago.processor9x9 import SevenPlaneProcessor
+from betago.processor9x9 import ThreePlaneProcessor
 import tensorflow as tf
 from keras.models import model_from_yaml
 from models import *
 
-num_samples = 1000
-batch_size = 128
-nb_epoch = 100
+num_samples = 120000 #1000
+batch_size = 128 #128
+nb_epoch = 300 #100
 
 nb_classes = 9 * 9  # One class for each position on the board
 go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
@@ -26,20 +27,22 @@ nb_pool = 2  # size of pooling area for max pooling
 nb_conv = 3  # convolution kernel size
 
 # SevenPlaneProcessor loads seven planes (doh!) of 19*19 data points, so we need 7 input channels
-processor = SevenPlaneProcessor(data_directory='data_9x9')
+# processor = SevenPlaneProcessor(data_directory='data_9x9')
+processor = ThreePlaneProcessor(data_directory='data_9x9')
 input_channels = processor.num_planes
 
 # Load go data from 1000 KGS games and one-hot encode labels
-X, y = processor.load_go_data_9x9(num_samples=num_samples,data_dir='data_9x9')
+X, y = processor.load_go_data_9x9(num_samples=2000,data_dir='data_9x9')
 
-
+print("X LENGTH:",len(X))
 X = X[:num_samples]
 y = y[:num_samples]
 
 X = X.astype('float32')
 Y = np_utils.to_categorical(y, nb_classes)
 
-model = model_padding_last_replaced(input_channels)
+model = model_3()
+# model = model_padding_last_replaced(input_channels)
 #model.summary()
 
 # Fit model to data
@@ -58,4 +61,6 @@ graph = tf.get_default_graph()
 go_server = HTTPFrontend(bot=go_model,graph=graph,port=8080)
 webbrowser.open('http://0.0.0.0:8080/', new=2)
 go_server.run()
+
+
 
