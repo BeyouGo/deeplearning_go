@@ -3,6 +3,7 @@ import os
 import webbrowser
 
 import yaml
+from keras import optimizers
 from keras.engine import Layer
 from keras.layers import LSTM, Conv2DTranspose, Conv2D
 from keras.models import Sequential
@@ -23,7 +24,7 @@ def model_padding_last_replaced(input_channels, pretrained_fixed=True):
     # nb_pool = 2  # size of pooling area for max pooling
     # nb_conv = 3  # convolution kernel size
     # padding = ((5, 5), (5, 5))
-    padding = ((0,10), (0,10))
+    padding = ((0, 10), (0, 10))
     #################################
 
     bot_name = 'demo'
@@ -38,10 +39,10 @@ def model_padding_last_replaced(input_channels, pretrained_fixed=True):
         pretrained_model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
         pretrained_model.load_weights(weight_file)
         # Remove the last 2 layers dense x => 19*19 and activation (softmax)
-#        pretrained_model.summary()
+        #        pretrained_model.summary()
         pretrained_model.pop()
         pretrained_model.pop()
-#        pretrained_model.summary()
+    #        pretrained_model.summary()
 
     #################################
 
@@ -63,7 +64,6 @@ def model_padding_last_replaced(input_channels, pretrained_fixed=True):
     model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
 
     return model
-
 
 
 def model2(input_channels):
@@ -99,13 +99,12 @@ def model2(input_channels):
     return model
 
 
-def model_3():
+def model_3(input_channels):
     nb_classes = 9 * 9  # One class for each position on the board
     go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
-    nb_filters = 32  # number of convolutional filters to use
+    nb_filters = 128  # number of convolutional filters to use
     nb_pool = 2  # size of pooling area for max pooling
     nb_conv = 3  #
-    input_channels = 3
 
     model = Sequential()
     model.add(Conv2D(nb_filters, (nb_conv, nb_conv), padding='valid',
@@ -117,10 +116,188 @@ def model_3():
     model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
     model.add(Dropout(0.25))
     model.add(Flatten())
-    model.add(Dense(256))
+    model.add(Dense(256))  # 256
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
     model.add(Dense(nb_classes))
     model.add(Activation('softmax'))
+
+    adadelta = optimizers.Adadelta(lr=0.05, decay=1e-6)
+    model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
+    return model
+
+
+
+
+
+
+
+
+def model_C(input_channels, pretrained_fixed=True):
+    nb_classes = 9 * 9  # One class for each position on the board
+    go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
+    # nb_filters = 32  # number of convolutional filters to use
+    # nb_pool = 2  # size of pooling area for max pooling
+    # nb_conv = 3  # convolution kernel size
+    # padding = ((5, 5), (5, 5))
+    padding = ((0, 10), (0, 10))
+    #################################
+
+    bot_name = 'demo'
+    model_file = 'model_zoo/' + bot_name + '_bot.yml'
+    weight_file = 'model_zoo/' + bot_name + '_weights.hd5'
+
+    with open(model_file, 'r') as f:
+        yml = yaml.load(f)
+        pretrained_model = model_from_yaml(yaml.dump(yml))
+
+        # Note that in Keras 1.0 we have to recompile the model explicitly
+        pretrained_model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
+        pretrained_model.load_weights(weight_file)
+        pretrained_model.summary()
+        # Remove the last 2 layers dense x => 19*19 and activation (softmax)
+        #        pretrained_model.summary()
+        pretrained_model.pop()
+        pretrained_model.pop()
+        pretrained_model.pop()
+        pretrained_model.pop()
+    #        pretrained_model.summary()
+
+    #################################
+
+    model = Sequential()
+    model.add(ZeroPadding2D(input_shape=(input_channels, go_board_rows, go_board_cols),
+                            padding=padding,
+                            data_format='channels_first'))
+
+    model.add(pretrained_model)
+    if pretrained_fixed:
+        # Set pretrained as not updatable
+        model.layers[-1].trainable = False
+    else:
+        model.layers[-1].trainable = True
+
+    # model.add(Dropout(0.25))
+    # model.add(Flatten())
+    model.add(Dense(256))  # 256
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(nb_classes))
+    model.add(Activation('softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
+
+    return model
+
+
+def model_E(input_channels):
+    from betago.networks.large import layers
+    nb_classes = 9*9
+
+    layer_list = layers((input_channels,9,9))
+    model = Sequential()
+    for layer in layer_list:
+        model.add(layer)
+
+    model.add(Dropout(0.5))
+    model.add(Dense(nb_classes))
+    model.add(Activation('softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
+    return model
+
+
+
+
+
+def model_D(input_channels):
+
+    board_size = 9
+    nb_classes = board_size * board_size
+
+    input_shape = (input_channels, board_size, board_size)
+
+    model = Sequential()
+    model.add(ZeroPadding2D((3, 3), input_shape=input_shape, data_format='channels_first'))
+    model.add(Conv2D(48, (7, 7), padding='valid', data_format='channels_first'))
+    model.add(Activation('relu'))
+
+    model.add(ZeroPadding2D((2, 2), data_format='channels_first'))
+    model.add(Conv2D(32, (5, 5), data_format='channels_first'))
+    model.add(Activation('relu'))
+
+    model.add(ZeroPadding2D((2, 2), data_format='channels_first'))
+    model.add(Conv2D(32, (5, 5), data_format='channels_first'))
+    model.add(Activation('relu'))
+
+    model.add(ZeroPadding2D((2, 2), data_format='channels_first'))
+    model.add(Conv2D(32, (5, 5), data_format='channels_first'))
+    model.add(Activation('relu'))
+
+    model.add(Flatten())
+    model.add(Dense(512))
+    model.add(Activation('relu'))
+
+    model.add(Dropout(0.5))
+    model.add(Dense(nb_classes))
+    model.add(Activation('softmax'))
+    model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
+    return model
+
+
+
+def model_B(input_channels):
+    nb_classes = 9 * 9  # One class for each position on the board
+    go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
+    nb_filters = 32  # number of convolutional filters to use
+    nb_pool = 2  # size of pooling area for max pooling
+    nb_conv = 3  #
+
+    model = Sequential()
+    model.add(Conv2D(nb_filters, (nb_conv, nb_conv), padding='valid',
+                     input_shape=(input_channels, go_board_rows, go_board_cols),
+                     data_format='channels_first'))
+    model.add(Activation('relu'))
+    model.add(Conv2D(nb_filters, (nb_conv, nb_conv), data_format='channels_first'))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
+    model.add(Dropout(0.25))
+    model.add(Flatten())
+    model.add(Dense(256))  # 256
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(nb_classes))
+    model.add(Activation('softmax'))
+
+    adadelta = optimizers.Adadelta(lr=0.05, decay=1e-6)
+    model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
+    return model
+
+
+
+
+
+def model_A(input_channels):
+    nb_classes = 9 * 9  # One class for each position on the board
+    go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
+    nb_filters = 32  # number of convolutional filters to use
+    nb_pool = 2  # size of pooling area for max pooling
+    nb_conv = 3  #
+
+    model = Sequential()
+    model.add(Conv2D(nb_filters, (nb_conv, nb_conv), padding='valid',
+                     input_shape=(input_channels, go_board_rows, go_board_cols),
+                     data_format='channels_first'))
+    model.add(Activation('relu'))
+    model.add(Conv2D(nb_filters, (nb_conv, nb_conv), data_format='channels_first'))
+    model.add(Activation('relu'))
+    model.add(MaxPooling2D(pool_size=(nb_pool, nb_pool)))
+    model.add(Dropout(0.25))
+    model.add(Flatten())
+    model.add(Dense(256))  # 256
+    model.add(Activation('relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(nb_classes))
+    model.add(Activation('softmax'))
+
+    adadelta = optimizers.Adadelta(lr=0.05, decay=1e-6)
     model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
     return model
