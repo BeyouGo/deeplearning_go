@@ -53,8 +53,11 @@ class OGSIndex(object):
         # self.file_info.append(["OGS-2019-04-9x9.tar.gz",1075])
         # self.file_info.append(["OGS-2019-05-9x9.tar.gz",1056])
 
-        filenames = ['OGS-2019-01-9x9.tar.gz','OGS-2019-02-9x9.tar.gz','OGS-2019-03-9x9.tar.gz','OGS-2019-04-9x9.tar.gz','OGS-2019-05-9x9.tar.gz']
-        num_games =  [1020,1070,1202,1075,1056]
+        # filenames = ['OGS-2019-01-9x9.tar.gz','OGS-2019-02-9x9.tar.gz','OGS-2019-03-9x9.tar.gz','OGS-2019-04-9x9.tar.gz','OGS-2019-05-9x9.tar.gz']
+        filenames = ['OGS-2019-01-9x9-2500.tar.gz','OGS-2019-02-9x9-2500.tar.gz','OGS-2019-03-9x9-2500.tar.gz','OGS-2019-04-9x9-2500.tar.gz','OGS-2019-05-9x9-2500.tar.gz']
+        # num_games =  [1020,1070,1202,1075,1056]
+        # filenames = ['OGS-2019-01-9x9-2500.tar.gz']
+        num_games = [444,456,422,387,446]
 
         # data = {}
         # data['filename'] = 'OGS-2019-01-9x9.tar.gz'
