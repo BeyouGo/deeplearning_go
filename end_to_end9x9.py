@@ -23,30 +23,20 @@ import numpy as np
 import matplotlib
 
 
-def show_graph(history, n_epochs, n_samples, n_batch, model_name,processorName):
+def show_graph(history, n_epochs, n_samples, n_batch, model_name, processorName):
     print(history.history.keys())
-    # summarize history for accuracy
     plt.plot(history.history['acc'])
-
     plt.plot(history.history['val_acc'])
-    # plt.plot(history.history['val_acc'])
     plt.title('model accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
     plt.legend(['train', 'test'], loc='upper left')
-    # plt.show()
-    # summarize history for loss
-    # plt.plot(history.history['loss'])
-    # plt.title('model loss')
-    # plt.ylabel('loss')
-    # plt.xlabel('epoch')
-    # plt.legend(['train', 'test'], loc='upper left')
-    plt.savefig(model_name + '_'+processorName+'_' + str(n_samples) + '_' + str(n_epochs) + '_' + str(n_batch) + '.png')
+    plt.savefig(
+        model_name + '_' + processorName + '_' + str(n_samples) + '_' + str(n_epochs) + '_' + str(n_batch) + '.png')
     plt.show()
 
 
-# num_samples = 440000 # 1000
-num_samples = 1350000 # 1000
+num_samples = 1350000  # 1000
 batch_size = 128  # 128
 nb_epoch = 100  # 100
 
@@ -55,8 +45,6 @@ go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
 nb_filters = 32  # number of convolutional filters to use
 nb_pool = 2  # size of pooling area for max pooling
 nb_conv = 3  # convolution kernel size
-
-
 
 ##### PROCESSOR
 
@@ -68,13 +56,12 @@ processor = SevenPlaneProcessor(data_directory='data_9x9')
 # processor = ThreePlaneOnesProcessor(data_directory='data_9x9')
 # processor = FourPlaneOnesProcessor(data_directory='data_9x9')
 # processor = EightPlaneProcessor(data_directory='data_9x9')
-# ThreePlaneOnesProcessor
 
 ##### Data Extraction
 
 input_channels = processor.num_planes
 
-# Load go data from 1000 KGS games and one-hot encode labels
+# Load go data from 20000 KGS games and one-hot encode labels
 Xall, yall = processor.load_go_data_9x9(num_samples=20000, data_dir='data_9x9')
 
 print("X LENGTH:", len(Xall), " ", len(Xall[0]))
@@ -97,24 +84,21 @@ model = model_G(input_channels)
 # model = model_3(input_channels)
 # model = model_D(input_channels)
 # model = model_C(input_channels)
-# model.load_weights("model-120000-20-128-model_E-EightPlaneOnes.hd5")
 # model.summary()
 
 modelname = "model_G"
 processorName = "7Plane_TF"
-# model.summary()
 
 print(processor.num_planes)
 
 # Fit model to data
-history = model.fit(X, Y, batch_size=batch_size, epochs=nb_epoch, verbose=1,validation_split=0.05)
-filename = 'model-' + str(num_samples) + '-' + str(nb_epoch) + '-' + str(batch_size) + '-' + modelname+'-'+ processorName +".hd5"
+history = model.fit(X, Y, batch_size=batch_size, epochs=nb_epoch, verbose=1, validation_split=0.05)
+filename = 'model-' + str(num_samples) + '-' + str(nb_epoch) + '-' + str(
+    batch_size) + '-' + modelname + '-' + processorName + ".hd5"
 model.save(filename)
 model.summary()
 
-
-
-show_graph(history, nb_epoch, num_samples, batch_size, modelname,processorName)
+show_graph(history, nb_epoch, num_samples, batch_size, modelname, processorName)
 
 tops = [1, 5]
 for top in tops:
@@ -129,7 +113,7 @@ for top in tops:
 
         if actual_move in prediction.argsort()[-top:][::-1]:
             count_good = count_good + 1
-    print("top ", top ,": ",float(count_good) / len(predictions))
+    print("top ", top, ": ", float(count_good) / len(predictions))
 
 # # Open web frontend
 path = os.getcwd().replace('/examples', '')
