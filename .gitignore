@@ -9,3 +9,7 @@ betago/*.pyc
 betago/dataloader/*.pyc
 betago/gosgf/*.pyc
 betago/model/*.pyc
+
+\.idea/
+
+venv/
