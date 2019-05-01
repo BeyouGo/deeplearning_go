@@ -38,11 +38,8 @@ def model_padding_last_replaced(input_channels, pretrained_fixed=True):
         # Note that in Keras 1.0 we have to recompile the model explicitly
         pretrained_model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
         pretrained_model.load_weights(weight_file)
-        # Remove the last 2 layers dense x => 19*19 and activation (softmax)
-        #        pretrained_model.summary()
         pretrained_model.pop()
         pretrained_model.pop()
-    #        pretrained_model.summary()
 
     #################################
 
@@ -68,13 +65,8 @@ def model_padding_last_replaced(input_channels, pretrained_fixed=True):
 
 def model2(input_channels):
     nb_classes = 9 * 9  # One class for each position on the board
-    go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
-    nb_filters = 32  # number of convolutional filters to use
-    nb_pool = 2  # size of pooling area for max pooling
-    nb_conv = 3  # convolution kernel size
 
     #################################
-
     bot_name = 'demo'
     model_file = 'model_zoo/' + bot_name + '_bot.yml'
     weight_file = 'model_zoo/' + bot_name + '_weights.hd5'
@@ -86,7 +78,6 @@ def model2(input_channels):
         # Note that in Keras 1.0 we have to recompile the model explicitly
         pretrained_model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
         pretrained_model.load_weights(weight_file)
-
     #################################
 
     model = Sequential()
@@ -161,11 +152,7 @@ def model_3(input_channels):
 def model_G(input_channels, pretrained_fixed=True):
     nb_classes = 9 * 9  # One class for each position on the board
     go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
-    # nb_filters = 32  # number of convolutional filters to use
-    # nb_pool = 2  # size of pooling area for max pooling
-    # nb_conv = 3  # convolution kernel size
     padding = ((5, 5), (5, 5))
-    # padding = ((0, 10), (0, 10))
     #################################
 
     bot_name = '100_epochs_cnn'
@@ -183,33 +170,25 @@ def model_G(input_channels, pretrained_fixed=True):
 
         pretrained_model.summary()
         # Remove the last 2 layers dense x => 19*19 and activation (softmax)
-        #        pretrained_model.summary()
         pretrained_model.pop()
         pretrained_model.pop()
         pretrained_model.pop()
         pretrained_model.pop()
-    #        pretrained_model.summary()
-
     #################################
 
     model = Sequential()
     model.add(ZeroPadding2D(input_shape=(input_channels, go_board_rows, go_board_cols),
                             padding=padding,
                             data_format='channels_first'))
-    # pretrained_model.trainable = False
 
     model.add(pretrained_model)
-    # model.
     if pretrained_fixed:
         # Set pretrained as not updatable
         model.layers[-1].trainable = False
     else:
         model.layers[-1].trainable = True
 
-
-    # model.add(Dropout(0.25))
-    # model.add(Flatten())
-    model.add(Dense(256))  # 256
+    model.add(Dense(256))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
     model.add(Dense(nb_classes))
@@ -224,11 +203,7 @@ def model_G(input_channels, pretrained_fixed=True):
 
 def model_F(input_channels, pretrained_fixed=True):
     nb_classes = 9 * 9  # One class for each position on the board
-    go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
-    # nb_filters = 32  # number of convolutional filters to use
-    # nb_pool = 2  # size of pooling area for max pooling
-    # nb_conv = 3  # convolution kernel size
-    # padding = ((5, 5), (5, 5))
+    go_board_rows, go_board_cols = 9, 9
     padding = ((0, 10), (0, 10))
     #################################
 
@@ -245,14 +220,11 @@ def model_F(input_channels, pretrained_fixed=True):
         pretrained_model.load_weights(weight_file)
 
 
-        pretrained_model.summary()
         # Remove the last 2 layers dense x => 19*19 and activation (softmax)
-        #        pretrained_model.summary()
         pretrained_model.pop()
         pretrained_model.pop()
         pretrained_model.pop()
         pretrained_model.pop()
-    #        pretrained_model.summary()
 
     #################################
 
@@ -260,10 +232,7 @@ def model_F(input_channels, pretrained_fixed=True):
     model.add(ZeroPadding2D(input_shape=(input_channels, go_board_rows, go_board_cols),
                             padding=padding,
                             data_format='channels_first'))
-    # pretrained_model.trainable = False
-
     model.add(pretrained_model)
-    # model.
     if pretrained_fixed:
         # Set pretrained as not updatable
         model.layers[-1].trainable = False
@@ -289,11 +258,7 @@ def model_F(input_channels, pretrained_fixed=True):
 
 def model_C(input_channels, pretrained_fixed=True):
     nb_classes = 9 * 9  # One class for each position on the board
-    go_board_rows, go_board_cols = 9, 9  # input dimensions of go board
-    # nb_filters = 32  # number of convolutional filters to use
-    # nb_pool = 2  # size of pooling area for max pooling
-    # nb_conv = 3  # convolution kernel size
-    # padding = ((5, 5), (5, 5))
+    go_board_rows, go_board_cols = 9, 9
     padding = ((0, 10), (0, 10))
     #################################
 
@@ -310,15 +275,11 @@ def model_C(input_channels, pretrained_fixed=True):
         pretrained_model.compile(loss='categorical_crossentropy', optimizer='adadelta', metrics=['accuracy'])
         pretrained_model.load_weights(weight_file)
 
-
-        # pretrained_model.summary()
         # Remove the last 2 layers dense x => 19*19 and activation (softmax)
-        #        pretrained_model.summary()
         pretrained_model.pop()
         pretrained_model.pop()
         pretrained_model.pop()
         pretrained_model.pop()
-    #        pretrained_model.summary()
 
     #################################
 
@@ -326,19 +287,13 @@ def model_C(input_channels, pretrained_fixed=True):
     model.add(ZeroPadding2D(input_shape=(input_channels, go_board_rows, go_board_cols),
                             padding=padding,
                             data_format='channels_first'))
-    # pretrained_model.trainable = False
 
     model.add(pretrained_model)
-    # model.
     if pretrained_fixed:
         # Set pretrained as not updatable
         model.layers[-1].trainable = False
     else:
         model.layers[-1].trainable = True
-
-
-    # model.add(Dropout(0.25))
-    # model.add(Flatten())
     model.add(Dense(128))  # 256
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
