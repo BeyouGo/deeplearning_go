@@ -61,9 +61,63 @@ class SevenPlaneProcessor(GoDataProcessor):
                     move_array[6, row, col] = 1
         return move_array, label
 
+class EightPlaneProcessor(GoDataProcessor):
+    '''
+    Implementation of a Go data processor, using seven planes of 9x9 values to represent the position of
+    a go board, as explained below.
 
+    This closely reflects the representation suggested in Clark, Storkey:
+    http://arxiv.org/abs/1412.3409
+    '''
 
+    def __init__(self, data_directory='data_9x9', num_planes=8, consolidate=True, use_generator=False):
+        super(EightPlaneProcessor, self).__init__(data_directory=data_directory,
+                                                  num_planes=num_planes,
+                                                  consolidate=consolidate,
+                                                  use_generator=use_generator)
 
+    def feature_and_label(self, color, move, go_board, num_planes):
+        '''
+        Parameters
+        ----------
+        color: color of the next person to move
+        move: move they decided to make
+        go_board: represents the state of the board before they moved
+
+        Planes we write:
+        0: our stones with 1 liberty
+        1: our stones with 2 liberty
+        2: our stones with 3 or more liberties
+        3: their stones with 1 liberty
+        4: their stones with 2 liberty
+        5: their stones with 3 or more liberties
+        6: simple ko
+        '''
+        row, col = move
+        enemy_color = go_board.other_color(color)
+        label = row * 9 + col
+        move_array = np.zeros((num_planes, go_board.board_size, go_board.board_size))
+        for row in range(0, go_board.board_size):
+            for col in range(0, go_board.board_size):
+                pos = (row, col)
+                if go_board.board.get(pos) == color:
+                    if go_board.go_strings[pos].liberties.size() == 1:
+                        move_array[0, row, col] = 1
+                    elif go_board.go_strings[pos].liberties.size() == 2:
+                        move_array[1, row, col] = 1
+                    elif go_board.go_strings[pos].liberties.size() >= 3:
+                        move_array[2, row, col] = 1
+                if go_board.board.get(pos) == enemy_color:
+                    if go_board.go_strings[pos].liberties.size() == 1:
+                        move_array[3, row, col] = 1
+                    elif go_board.go_strings[pos].liberties.size() == 2:
+                        move_array[4, row, col] = 1
+                    elif go_board.go_strings[pos].liberties.size() >= 3:
+                        move_array[5, row, col] = 1
+                move_array[6, row, col] = 1
+                if color == 'b':
+                    move_array[7, row, col] = 1
+        return move_array, label
 
 
 
@@ -78,9 +132,9 @@ class SixPlaneProcessor(GoDataProcessor):
 
     def __init__(self, data_directory='data_9x9', num_planes=6, consolidate=True, use_generator=False):
         super(SixPlaneProcessor, self).__init__(data_directory=data_directory,
-                                                  num_planes=num_planes,
-                                                  consolidate=consolidate,
-                                                  use_generator=use_generator)
+                                                num_planes=num_planes,
+                                                consolidate=consolidate,
+                                                use_generator=use_generator)
 
     def feature_and_label(self, color, move, go_board, num_planes):
         '''
@@ -123,8 +177,6 @@ class SixPlaneProcessor(GoDataProcessor):
         return move_array, label
 
 
-
-
 class TwoPlaneProcessor(GoDataProcessor):
     '''
     Simpler version of the above processor using just three planes. This data processor uses one plane for
@@ -133,9 +185,9 @@ class TwoPlaneProcessor(GoDataProcessor):
 
     def __init__(self, data_directory='data', num_planes=2, consolidate=True, use_generator=False):
         super(TwoPlaneProcessor, self).__init__(data_directory=data_directory,
-                                                  num_planes=num_planes,
-                                                  consolidate=consolidate,
-                                                  use_generator=use_generator)
+                                                num_planes=num_planes,
+                                                consolidate=consolidate,
+                                                use_generator=use_generator)
 
     def feature_and_label(self, color, move, go_board, num_planes):
         '''
@@ -163,6 +215,88 @@ class TwoPlaneProcessor(GoDataProcessor):
         return move_array, label
 
 
+class FourPlaneOnesProcessor(GoDataProcessor):
+    '''
+    Simpler version of the above processor using just three planes. This data processor uses one plane for
+    stone positions of each color and one for ko.
+    '''
+
+    def __init__(self, data_directory='data', num_planes=4, consolidate=True, use_generator=False):
+        super(FourPlaneOnesProcessor, self).__init__(data_directory=data_directory,
+                                                      num_planes=num_planes,
+                                                      consolidate=consolidate,
+                                                      use_generator=use_generator)
+
+    def feature_and_label(self, color, move, go_board, num_planes):
+        '''
+        Parameters
+        ----------
+        color: color of the next person to move
+        move: move they decided to make
+        go_board: represents the state of the board before they moved
+
+        Planes we write:
+        0: our stones
+        1: their stones
+        2: Ones plane
+        3: 1 if black turn, 0 otherwise
+        '''
+        row, col = move
+        enemy_color = go_board.other_color(color)
+        label = row * 9 + col
+        move_array = np.zeros((num_planes, go_board.board_size, go_board.board_size))
+        for row in range(0, go_board.board_size):
+            for col in range(0, go_board.board_size):
+                pos = (row, col)
+                if go_board.board.get(pos) == color:
+                    move_array[0, row, col] = 1
+                if go_board.board.get(pos) == enemy_color:
+                    move_array[1, row, col] = 1
+                move_array[2, row, col] = 1
+                if color == 'b':
+                    move_array[3, row, col] = 1
+
+        return move_array, label
+
+
+class ThreePlaneOnesProcessor(GoDataProcessor):
+    '''
+    Simpler version of the above processor using just three planes. This data processor uses one plane for
+    stone positions of each color and one for ko.
+    '''
+
+    def __init__(self, data_directory='data', num_planes=3, consolidate=True, use_generator=False):
+        super(ThreePlaneOnesProcessor, self).__init__(data_directory=data_directory,
+                                                      num_planes=num_planes,
+                                                      consolidate=consolidate,
+                                                      use_generator=use_generator)
+
+    def feature_and_label(self, color, move, go_board, num_planes):
+        '''
+        Parameters
+        ----------
+        color: color of the next person to move
+        move: move they decided to make
+        go_board: represents the state of the board before they moved
+
+        Planes we write:
+        0: our stones
+        1: their stones
+        2: ko
+        '''
+        row, col = move
+        enemy_color = go_board.other_color(color)
+        label = row * 9 + col
+        move_array = np.zeros((num_planes, go_board.board_size, go_board.board_size))
+        for row in range(0, go_board.board_size):
+            for col in range(0, go_board.board_size):
+                pos = (row, col)
+                if go_board.board.get(pos) == color:
+                    move_array[0, row, col] = 1
+                if go_board.board.get(pos) == enemy_color:
+                    move_array[1, row, col] = 1
+                move_array[2, row, col] = 1
+        return move_array, label
 
 
 class ThreePlaneProcessor(GoDataProcessor):
@@ -211,6 +345,7 @@ class SevenPlaneFileProcessor(GoFileProcessor):
     File processor corresponding to the above data processor. Loading all available data into memory is simply
     not feasible, and this class allows preprocessing into an efficient, binary format.
     '''
+
     def __init__(self, data_directory='data', num_planes=7, consolidate=True):
         super(SevenPlaneFileProcessor, self).__init__(data_directory=data_directory,
                                                       num_planes=num_planes, consolidate=consolidate)
@@ -262,7 +397,7 @@ class SevenPlaneFileProcessor(GoFileProcessor):
                         elif plane == 5 and go_board.go_strings[pos].liberties.size() >= 3:
                             thisbit = 1
                     if plane == 6 and go_board.is_simple_ko(color, pos):
-                            thisbit = 1
+                        thisbit = 1
                     thisbyte = thisbyte + (thisbit << (7 - thisbitpos))
                     thisbitpos = thisbitpos + 1
                     if thisbitpos == 8:

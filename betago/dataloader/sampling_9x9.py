@@ -96,9 +96,9 @@ class Sampler(object):
         for fileinfo in index.file_info:
             filename = fileinfo['filename']
 
-            year = int(filename.split('-')[1].split('_')[0])
-            if year > self.cap_year:
-                continue
+            # year = int(filename.split('-')[1].split('_')[0])
+            # if year > self.cap_year:
+            #     continue
             numgames = fileinfo['num_games']
             for i in range(numgames):
                 available_games.append((filename, i))
